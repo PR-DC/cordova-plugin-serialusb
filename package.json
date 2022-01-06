@@ -1,0 +1,29 @@
+{
+  "name": "cordova-plugin-serialusb",
+  "version": "1.0.0",
+  "description": "Cordova plugin for Android Serial USB communication",
+  "cordova": {
+    "id": "cordova-plugin-serialusb",
+    "platforms": [
+      "android"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "Miloš Petrašinović <mpetrasinovic@pr-dc.com>",
+  "license": "MIT",
+  "main": "./www/SerialUSB.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PR-DC/cordova-plugin-serialusb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PR-DC/cordova-plugin-serialusb/issues"
+  },
+  "homepage": "https://github.com/PR-DC/cordova-plugin-serialusb#readme"
+}
