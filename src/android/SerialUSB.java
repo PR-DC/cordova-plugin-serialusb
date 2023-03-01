@@ -69,9 +69,9 @@ public class SerialUSB extends CordovaPlugin {
 	// The serial port that will be used in this plugin
 	private UsbSerialPort port;
 	// Read buffer, and read params
-	private static final int READ_WAIT_MILLIS = 200;
-	private static final int BUFSIZ = 4096;
-	private final ByteBuffer mReadBuffer = ByteBuffer.allocate(BUFSIZ);
+	private int readWait = 200;
+	private int writeWait = 1000;
+	private ByteBuffer mReadBuffer = ByteBuffer.allocate(4096);
 	// Connection info
 	private int baudRate;
 	private int dataBits;
@@ -254,6 +254,12 @@ public class SerialUSB extends CordovaPlugin {
 							parity = opts.has("parity") ? opts.getInt("parity") : UsbSerialPort.PARITY_NONE;
 							setDTR = opts.has("dtr") && opts.getBoolean("dtr");
 							setRTS = opts.has("rts") && opts.getBoolean("rts");
+              readWait = opts.has("readWait") ? opts.getInt("readWait") : readWait;
+              writeWait = opts.has("writeWait") ? opts.getInt("writeWait") : writeWait;
+              if(opts.has("bufSize")) {
+                mReadBuffer = ByteBuffer.allocate(opts.getInt("bufSize"));
+              }
+              
 							// Sleep On Pause defaults to true
 							sleepOnPause = opts.has("sleepOnPause") ? opts.getBoolean("sleepOnPause") : true;
 
@@ -289,6 +295,32 @@ public class SerialUSB extends CordovaPlugin {
 	 * @param data the {@link String} representation of the data to be written on the port
 	 * @param callbackContext the cordova {@link CallbackContext}
 	 */
+	private void writeSerialBytes(byte[] buffer, final CallbackContext callbackContext) {
+		cordova.getThreadPool().execute(new Runnable() {
+			public void run() {
+				if (port == null) {
+					callbackContext.error("Writing a closed port.");
+				}
+				else {
+					try {
+						port.write(buffer, writeWait);
+						callbackContext.success();
+					}
+					catch (IOException e) {
+						// deal with error
+						Log.d(TAG, e.getMessage());
+						callbackContext.error(e.getMessage());
+					}
+				}
+			}
+		});
+	}
+  
+	/**
+	 * Write on the serial port
+	 * @param data the {@link String} representation of the data to be written on the port
+	 * @param callbackContext the cordova {@link CallbackContext}
+	 */
 	private void writeSerial(final String data, final CallbackContext callbackContext) {
 		cordova.getThreadPool().execute(new Runnable() {
 			public void run() {
@@ -299,7 +331,7 @@ public class SerialUSB extends CordovaPlugin {
 					try {
 						Log.d(TAG, data);
 						byte[] buffer = data.getBytes();
-						port.write(buffer, 1000);
+						port.write(buffer, writeWait);
 						callbackContext.success();
 					}
 					catch (IOException e) {
@@ -328,7 +360,7 @@ public class SerialUSB extends CordovaPlugin {
 					try {
 						Log.d(TAG, data);
 						byte[] buffer = hexStringToByteArray(data);
-						port.write(buffer, 1000);
+						port.write(buffer, writeWait);
 						callbackContext.success();
 					}
 					catch (IOException e) {
@@ -373,7 +405,7 @@ public class SerialUSB extends CordovaPlugin {
 				} 
 				else {
 					try {
-						int len = port.read(mReadBuffer.array(), READ_WAIT_MILLIS);
+						int len = port.read(mReadBuffer.array(), readWait);
 						// Whatever happens, we send an "OK" result, up to the
 						// receiver to check that len > 0
 						PluginResult.Status status = PluginResult.Status.OK;

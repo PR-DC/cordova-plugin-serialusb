@@ -48,6 +48,15 @@ var SerialUSB = {
             [{'data': hexString}]
         );
     },
+    writeBytes: function(buffer, successCallback, errorCallback) {
+        cordova.exec(
+            successCallback,
+            errorCallback,
+            'SerialUSB',
+            'writeSerialBytes',
+            [{'data': buffer}]
+        );
+    },
     read: function(successCallback, errorCallback) {
         cordova.exec(
             successCallback,
